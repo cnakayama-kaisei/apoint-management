@@ -97,11 +97,12 @@ function renderMembers() {
         const setDate = formatDate(member.statusSetDate);
         const endDate = member.statusEndDate ? formatDate(member.statusEndDate) : '未設定';
         const daysSince = getDaysSince(member.statusSetDate);
+        const closerBadge = member.requiresCloser ? '<span class="closer-badge">👔 クローザー必須</span>' : '';
         
         return `
             <div class="member-card ${statusClass}" onclick="openEditModal('${member.id}')">
                 <div class="member-name">${member.name}</div>
-                <div class="status-badge ${statusClass}">${member.status}</div>
+                <div class="status-badge ${statusClass}">${member.status}</div>${closerBadge}
                 <div class="member-info">
                     <div class="member-info-row">
                         <span class="member-info-label">設定日:</span>
@@ -124,7 +125,8 @@ function getStatusClass(status) {
         'アポイント停止': 'status-stop',
         'アポイント制限': 'status-limited',
         'トレアポのみ': 'status-training',
-        'トレアポ+通常アポ': 'status-trainplus'
+        'トレアポ+通常アポ': 'status-trainplus',
+        '通常アポのみ': 'status-normal'
     };
     return statusMap[status] || '';
 }
@@ -214,6 +216,7 @@ function openEditModal(memberId) {
     document.getElementById('memberName').value = member.name;
     document.getElementById('memberStatus').value = member.status;
     document.getElementById('memberMemo').value = member.memo || '';
+    document.getElementById('requiresCloser').checked = member.requiresCloser || false;
     
     if (member.statusEndDate) {
         document.getElementById('hasEndDate').checked = true;
@@ -285,6 +288,7 @@ function saveMember() {
     const memo = document.getElementById('memberMemo').value.trim();
     const hasEndDate = document.getElementById('hasEndDate').checked;
     const endDate = hasEndDate ? document.getElementById('statusEndDate').value : null;
+    const requiresCloser = document.getElementById('requiresCloser').checked;
     
     if (!name) {
         alert('メンバー名を入力してください');
@@ -304,6 +308,7 @@ function saveMember() {
             status: status,
             memo: memo,
             statusEndDate: endDate ? new Date(endDate).toISOString() : null,
+            requiresCloser: requiresCloser,
             updatedAt: now
         };
         
@@ -347,6 +352,7 @@ function saveMember() {
             statusSetDate: now,
             statusEndDate: endDate ? new Date(endDate).toISOString() : null,
             memo: memo,
+            requiresCloser: requiresCloser,
             createdAt: now,
             updatedAt: now
         })
