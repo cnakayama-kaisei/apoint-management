@@ -1,702 +1,450 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>営業メンバー管理システム</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        header {
-            background: white;
-            border-radius: 12px;
-            padding: 20px 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            color: #2d3748;
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .user-email {
-            font-size: 14px;
-            color: #718096;
-        }
-
-        .logout-btn {
-            margin-left: auto;
-            padding: 6px 16px;
-            background: #e2e8f0;
-            color: #4a5568;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .logout-btn:hover {
-            background: #cbd5e0;
-        }
-
-        .notification-banner {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 12px 16px;
-            border-radius: 6px;
-            margin-top: 15px;
-            display: none;
-        }
-
-        .notification-banner.show {
-            display: block;
-        }
-
-        .notification-banner p {
-            color: #856404;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .controls {
-            background: white;
-            border-radius: 12px;
-            padding: 20px 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .filter-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 8px 16px;
-            border: 2px solid #e2e8f0;
-            background: white;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-
-        .filter-btn:hover {
-            border-color: #667eea;
-        }
-
-        .filter-btn.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .add-member-btn {
-            margin-left: auto;
-            padding: 10px 24px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .add-member-btn:hover {
-            background: #5568d3;
-            transform: translateY(-1px);
-        }
-
-        .members-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-        }
-
-        .member-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.2s;
-            cursor: pointer;
-            border-left: 6px solid;
-        }
-
-        .member-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
-        }
-
-        .member-card.status-stop {
-            border-left-color: #ef4444;
-        }
-
-        .member-card.status-limited {
-            border-left-color: #f97316;
-        }
-
-        .member-card.status-training {
-            border-left-color: #eab308;
-        }
-
-        .member-card.status-trainplus {
-            border-left-color: #3b82f6;
-        }
-
-        .member-name {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1a202c;
-            margin-bottom: 12px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-
-        .status-badge.status-stop {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .status-badge.status-limited {
-            background: #ffedd5;
-            color: #9a3412;
-        }
-
-        .status-badge.status-training {
-            background: #fef3c7;
-            color: #854d0e;
-        }
-
-        .status-badge.status-trainplus {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .member-info {
-            font-size: 14px;
-            color: #4a5568;
-            line-height: 1.8;
-        }
-
-        .member-info-row {
-            display: flex;
-            margin-bottom: 8px;
-        }
-
-        .member-info-label {
-            font-weight: 600;
-            min-width: 100px;
-            color: #2d3748;
-        }
-
-        .member-memo {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #e2e8f0;
-            font-size: 13px;
-            color: #718096;
-            font-style: italic;
-        }
-
-        /* モーダル */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            max-width: 600px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 25px rgba(0,0,0,0.2);
-        }
-
-        .modal-header {
-            padding: 24px 30px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #1a202c;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 28px;
-            color: #a0aec0;
-            cursor: pointer;
-            line-height: 1;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-        }
-
-        .close-btn:hover {
-            color: #4a5568;
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 24px;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .form-input,
-        .form-select,
-        .form-textarea {
-            width: 100%;
-            padding: 10px 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-            transition: all 0.2s;
-        }
-
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
-        }
-
-        .form-textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .checkbox-label input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .history-section {
-            margin-top: 30px;
-            padding-top: 30px;
-            border-top: 2px solid #e2e8f0;
-        }
-
-        .history-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 16px;
-        }
-
-        .history-item {
-            padding: 12px;
-            background: #f7fafc;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        .history-date {
-            font-weight: 600;
-            color: #4a5568;
-        }
-
-        .history-change {
-            color: #718096;
-            margin-top: 4px;
-        }
-
-        .history-user {
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        .modal-footer {
-            padding: 20px 30px;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-
-        .btn {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5568d3;
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #4a5568;
-        }
-
-        .btn-secondary:hover {
-            background: #cbd5e0;
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-            opacity: 0.3;
-        }
-
-        .empty-state-text {
-            color: #718096;
-            font-size: 16px;
-        }
-
-        /* ローディング */
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .loading-overlay.show {
-            display: flex;
-        }
-
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f4f6;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* ログイン画面 */
-        .login-container {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-        }
-
-        .login-container.show {
-            display: flex;
-        }
-
-        .login-box {
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 20px 25px rgba(0,0,0,0.2);
-        }
-
-        .login-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: #1a202c;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .login-subtitle {
-            font-size: 14px;
-            color: #718096;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 14px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .login-btn:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-        }
-
-        /* レスポンシブ */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            header {
-                padding: 16px 20px;
-            }
-
-            h1 {
-                font-size: 20px;
-            }
-
-            .controls {
-                padding: 16px 20px;
-            }
-
-            .add-member-btn {
-                width: 100%;
-                margin-left: 0;
-            }
-
-            .members-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-            .modal-content {
-                margin: 0;
-            }
-
-            .modal-header,
-            .modal-body,
-            .modal-footer {
-                padding: 20px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- ログイン画面 -->
-    <div class="login-container" id="loginContainer">
-        <div class="login-box">
-            <h1 class="login-title">📊 営業メンバー管理</h1>
-            <p class="login-subtitle">マネージャー専用システム</p>
-            <button class="login-btn" onclick="signInWithGoogle()">
-                🔐 Googleアカウントでログイン
-            </button>
-        </div>
-    </div>
-
-    <!-- ローディング -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-    </div>
-
-    <!-- メインコンテンツ -->
-    <div class="container" id="mainContainer" style="display:none;">
-        <header>
-            <h1>📊 営業メンバー管理システム</h1>
-            <div class="user-info">
-                <span class="user-email" id="userEmail"></span>
-                <button class="logout-btn" onclick="signOut()">ログアウト</button>
-            </div>
-            <div class="notification-banner" id="notificationBanner">
-                <p id="notificationText"></p>
-            </div>
-        </header>
-
-        <div class="controls">
-            <div class="filter-group">
-                <button class="filter-btn active" data-filter="all">すべて</button>
-                <button class="filter-btn" data-filter="アポイント停止">アポイント停止</button>
-                <button class="filter-btn" data-filter="アポイント制限">アポイント制限</button>
-                <button class="filter-btn" data-filter="トレアポのみ">トレアポのみ</button>
-                <button class="filter-btn" data-filter="トレアポ+通常アポ">トレアポ+通常アポ</button>
-            </div>
-            <button class="add-member-btn" onclick="openAddModal()">+ メンバーを追加</button>
-        </div>
-
-        <div class="members-grid" id="membersGrid">
-            <!-- メンバーカードがここに表示されます -->
-        </div>
-    </div>
-
-    <!-- 編集/追加モーダル -->
-    <div class="modal" id="memberModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="modalTitle">メンバー編集</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="memberForm">
-                    <input type="hidden" id="memberId">
-                    
-                    <div class="form-group">
-                        <label class="form-label">メンバー名 *</label>
-                        <input type="text" class="form-input" id="memberName" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">ステータス *</label>
-                        <select class="form-select" id="memberStatus" required>
-                            <option value="アポイント停止">アポイント停止</option>
-                            <option value="アポイント制限">アポイント制限</option>
-                            <option value="トレアポのみ">トレアポのみ</option>
-                            <option value="トレアポ+通常アポ">トレアポ+通常アポ</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="hasEndDate" onchange="toggleEndDate()">
-                            ステータス解除予定日を設定する
-                        </label>
-                    </div>
-
-                    <div class="form-group" id="endDateGroup" style="display:none;">
-                        <label class="form-label">解除予定日</label>
-                        <input type="date" class="form-input" id="statusEndDate">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">メモ(理由など)</label>
-                        <textarea class="form-textarea" id="memberMemo" placeholder="例: 新人研修期間中のため..."></textarea>
-                    </div>
-
-                    <div class="history-section" id="historySection" style="display:none;">
-                        <h3 class="history-title">変更履歴</h3>
-                        <div id="historyList"></div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-danger" id="deleteBtn" onclick="deleteMember()" style="display:none;">削除</button>
-                <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
-                <button class="btn btn-primary" onclick="saveMember()">保存</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+// Firebase設定
+const firebaseConfig = {
+    apiKey: "AIzaSyCQXLJdwou5Wxg0e44sIro74mIkzq2Gea0",
+    authDomain: "apoint-management.firebaseapp.com",
+    databaseURL: "https://apoint-management-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "apoint-management",
+    storageBucket: "apoint-management.firebasestorage.app",
+    messagingSenderId: "978886800554",
+    appId: "1:978886800554:web:bbc58959dd367cc67cccd3",
+    measurementId: "G-E7Y4RECQQH"
+};
+
+// Firebase初期化
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const database = firebase.database();
+
+// グローバル変数
+let currentUser = null;
+let members = [];
+let history = [];
+let currentFilter = 'all';
+let editingMemberId = null;
+let membersListener = null;
+let historyListener = null;
+
+// 認証状態の監視
+auth.onAuthStateChanged(function(user) {
+    if (user) {
+        currentUser = user;
+        document.getElementById('loginContainer').classList.remove('show');
+        document.getElementById('mainContainer').style.display = 'block';
+        document.getElementById('userEmail').textContent = user.email;
+        initializeApp();
+    } else {
+        currentUser = null;
+        document.getElementById('loginContainer').classList.add('show');
+        document.getElementById('mainContainer').style.display = 'none';
+        if (membersListener) membersListener.off();
+        if (historyListener) historyListener.off();
+    }
+});
+
+// Googleログイン
+function signInWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    showLoading();
+    auth.signInWithPopup(provider)
+        .then(function(result) {
+            hideLoading();
+        })
+        .catch(function(error) {
+            hideLoading();
+            alert('ログインに失敗しました: ' + error.message);
+        });
+}
+
+// ログアウト
+function signOut() {
+    if (confirm('ログアウトしますか?')) {
+        auth.signOut();
+    }
+}
+
+// アプリ初期化
+function initializeApp() {
+    initializeFilters();
+    listenToMembers();
+    listenToHistory();
+}
+
+// メンバーデータのリアルタイム監視
+function listenToMembers() {
+    membersListener = database.ref('members');
+    membersListener.on('value', function(snapshot) {
+        members = [];
+        snapshot.forEach(function(childSnapshot) {
+            members.push({
+                id: childSnapshot.key,
+                ...childSnapshot.val()
+            });
+        });
+        renderMembers();
+        checkNotifications();
+    });
+}
+
+// 履歴データのリアルタイム監視
+function listenToHistory() {
+    historyListener = database.ref('history');
+    historyListener.on('value', function(snapshot) {
+        history = [];
+        snapshot.forEach(function(childSnapshot) {
+            history.push({
+                id: childSnapshot.key,
+                ...childSnapshot.val()
+            });
+        });
+    });
+}
+
+// ローディング表示
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+// メンバー一覧表示
+function renderMembers() {
+    const grid = document.getElementById('membersGrid');
     
-    <script src="firebase-app.js"></script>
-</body>
-</html>
+    let filteredMembers = members;
+    if (currentFilter !== 'all') {
+        filteredMembers = members.filter(m => m.status === currentFilter);
+    }
+    
+    if (filteredMembers.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <p class="empty-state-text">メンバーが登録されていません</p>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = filteredMembers.map(member => {
+        const statusClass = getStatusClass(member.status);
+        const setDate = formatDate(member.statusSetDate);
+        const endDate = member.statusEndDate ? formatDate(member.statusEndDate) : '未設定';
+        const daysSince = getDaysSince(member.statusSetDate);
+        
+        return `
+            <div class="member-card ${statusClass}" onclick="openEditModal('${member.id}')">
+                <div class="member-name">${member.name}</div>
+                <div class="status-badge ${statusClass}">${member.status}</div>
+                <div class="member-info">
+                    <div class="member-info-row">
+                        <span class="member-info-label">設定日:</span>
+                        <span>${setDate} (${daysSince}日前)</span>
+                    </div>
+                    <div class="member-info-row">
+                        <span class="member-info-label">解除予定:</span>
+                        <span>${endDate}</span>
+                    </div>
+                </div>
+                ${member.memo ? `<div class="member-memo">💬 ${member.memo}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+// ステータスに応じたクラス名取得
+function getStatusClass(status) {
+    const statusMap = {
+        'アポイント停止': 'status-stop',
+        'アポイント制限': 'status-limited',
+        'トレアポのみ': 'status-training',
+        'トレアポ+通常アポ': 'status-trainplus'
+    };
+    return statusMap[status] || '';
+}
+
+// 日付フォーマット
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}/${month}/${day}`;
+}
+
+// 経過日数計算
+function getDaysSince(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now - date;
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+}
+
+// 通知チェック
+function checkNotifications() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const threeDaysLater = new Date(today);
+    threeDaysLater.setDate(threeDaysLater.getDate() + 3);
+    
+    const notifications = [];
+    
+    members.forEach(member => {
+        if (!member.statusEndDate) return;
+        
+        const endDate = new Date(member.statusEndDate);
+        endDate.setHours(0, 0, 0, 0);
+        
+        if (endDate.getTime() === today.getTime()) {
+            notifications.push(`${member.name}さんのステータス解除予定日は本日です`);
+        } else if (endDate >= today && endDate <= threeDaysLater) {
+            const daysLeft = Math.floor((endDate - today) / (1000 * 60 * 60 * 24));
+            notifications.push(`${member.name}さんのステータス解除予定日まであと${daysLeft}日です`);
+        }
+    });
+    
+    if (notifications.length > 0) {
+        const banner = document.getElementById('notificationBanner');
+        const text = document.getElementById('notificationText');
+        text.innerHTML = '🔔 ' + notifications.join('<br>🔔 ');
+        banner.classList.add('show');
+    }
+}
+
+// フィルター初期化
+function initializeFilters() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentFilter = this.dataset.filter;
+            renderMembers();
+        });
+    });
+}
+
+// 追加モーダルを開く
+function openAddModal() {
+    editingMemberId = null;
+    document.getElementById('modalTitle').textContent = '新しいメンバーを追加';
+    document.getElementById('memberForm').reset();
+    document.getElementById('memberId').value = '';
+    document.getElementById('deleteBtn').style.display = 'none';
+    document.getElementById('historySection').style.display = 'none';
+    document.getElementById('memberModal').classList.add('show');
+}
+
+// 編集モーダルを開く
+function openEditModal(memberId) {
+    const member = members.find(m => m.id === memberId);
+    if (!member) return;
+    
+    editingMemberId = memberId;
+    document.getElementById('modalTitle').textContent = 'メンバー情報編集';
+    document.getElementById('memberId').value = member.id;
+    document.getElementById('memberName').value = member.name;
+    document.getElementById('memberStatus').value = member.status;
+    document.getElementById('memberMemo').value = member.memo || '';
+    
+    if (member.statusEndDate) {
+        document.getElementById('hasEndDate').checked = true;
+        document.getElementById('statusEndDate').value = member.statusEndDate.split('T')[0];
+        document.getElementById('endDateGroup').style.display = 'block';
+    } else {
+        document.getElementById('hasEndDate').checked = false;
+        document.getElementById('endDateGroup').style.display = 'none';
+    }
+    
+    document.getElementById('deleteBtn').style.display = 'inline-block';
+    
+    // 履歴表示
+    renderHistory(memberId);
+    
+    document.getElementById('memberModal').classList.add('show');
+}
+
+// 履歴表示
+function renderHistory(memberId) {
+    const memberHistory = history.filter(h => h.memberId === memberId);
+    const historySection = document.getElementById('historySection');
+    const historyList = document.getElementById('historyList');
+    
+    if (memberHistory.length === 0) {
+        historySection.style.display = 'none';
+        return;
+    }
+    
+    historySection.style.display = 'block';
+    historyList.innerHTML = memberHistory
+        .sort((a, b) => new Date(b.changedAt) - new Date(a.changedAt))
+        .map(h => `
+            <div class="history-item">
+                <div class="history-date">${formatDate(h.changedAt)} ${formatTime(h.changedAt)}</div>
+                <div class="history-change">
+                    <span class="history-user">${h.changedBy}</span>が
+                    ${h.fromStatus ? `「${h.fromStatus}」→` : ''}「${h.toStatus}」に変更
+                </div>
+                ${h.memo ? `<div class="history-change">💬 ${h.memo}</div>` : ''}
+            </div>
+        `).join('');
+}
+
+// 時刻フォーマット
+function formatTime(dateString) {
+    const date = new Date(dateString);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+}
+
+// モーダルを閉じる
+function closeModal() {
+    document.getElementById('memberModal').classList.remove('show');
+    editingMemberId = null;
+}
+
+// 解除予定日の表示切替
+function toggleEndDate() {
+    const checkbox = document.getElementById('hasEndDate');
+    const endDateGroup = document.getElementById('endDateGroup');
+    endDateGroup.style.display = checkbox.checked ? 'block' : 'none';
+}
+
+// メンバー保存
+function saveMember() {
+    const name = document.getElementById('memberName').value.trim();
+    const status = document.getElementById('memberStatus').value;
+    const memo = document.getElementById('memberMemo').value.trim();
+    const hasEndDate = document.getElementById('hasEndDate').checked;
+    const endDate = hasEndDate ? document.getElementById('statusEndDate').value : null;
+    
+    if (!name) {
+        alert('メンバー名を入力してください');
+        return;
+    }
+    
+    showLoading();
+    const now = new Date().toISOString();
+    
+    if (editingMemberId) {
+        // 編集
+        const member = members.find(m => m.id === editingMemberId);
+        const oldStatus = member.status;
+        
+        const updates = {
+            name: name,
+            status: status,
+            memo: memo,
+            statusEndDate: endDate ? new Date(endDate).toISOString() : null,
+            updatedAt: now
+        };
+        
+        // ステータスが変わった場合は設定日も更新
+        if (oldStatus !== status) {
+            updates.statusSetDate = now;
+        }
+        
+        // メンバー情報を更新
+        database.ref('members/' + editingMemberId).update(updates)
+            .then(() => {
+                // 履歴に記録
+                if (oldStatus !== status || member.memo !== memo) {
+                    const historyRef = database.ref('history').push();
+                    return historyRef.set({
+                        memberId: editingMemberId,
+                        changedAt: now,
+                        changedBy: currentUser.email,
+                        fromStatus: oldStatus,
+                        toStatus: status,
+                        memo: memo
+                    });
+                }
+            })
+            .then(() => {
+                hideLoading();
+                closeModal();
+            })
+            .catch(error => {
+                hideLoading();
+                alert('保存に失敗しました: ' + error.message);
+            });
+    } else {
+        // 新規追加
+        const newMemberRef = database.ref('members').push();
+        const newMemberId = newMemberRef.key;
+        
+        newMemberRef.set({
+            name: name,
+            status: status,
+            statusSetDate: now,
+            statusEndDate: endDate ? new Date(endDate).toISOString() : null,
+            memo: memo,
+            createdAt: now,
+            updatedAt: now
+        })
+            .then(() => {
+                // 履歴に記録
+                const historyRef = database.ref('history').push();
+                return historyRef.set({
+                    memberId: newMemberId,
+                    changedAt: now,
+                    changedBy: currentUser.email,
+                    fromStatus: null,
+                    toStatus: status,
+                    memo: memo
+                });
+            })
+            .then(() => {
+                hideLoading();
+                closeModal();
+            })
+            .catch(error => {
+                hideLoading();
+                alert('保存に失敗しました: ' + error.message);
+            });
+    }
+}
+
+// メンバー削除
+function deleteMember() {
+    if (!editingMemberId) return;
+    
+    const member = members.find(m => m.id === editingMemberId);
+    if (!confirm(`${member.name}さんを削除してもよろしいですか?`)) {
+        return;
+    }
+    
+    showLoading();
+    
+    // メンバーを削除
+    database.ref('members/' + editingMemberId).remove()
+        .then(() => {
+            // 関連する履歴も削除
+            const historyPromises = [];
+            history.forEach(h => {
+                if (h.memberId === editingMemberId) {
+                    historyPromises.push(database.ref('history/' + h.id).remove());
+                }
+            });
+            return Promise.all(historyPromises);
+        })
+        .then(() => {
+            hideLoading();
+            closeModal();
+        })
+        .catch(error => {
+            hideLoading();
+            alert('削除に失敗しました: ' + error.message);
+        });
+}
+
+// モーダル外クリックで閉じる
+document.getElementById('memberModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
