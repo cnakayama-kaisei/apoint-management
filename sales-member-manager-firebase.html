@@ -12,11 +12,9 @@ const firebaseConfig = {
 
 // Firebase初期化
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
 const database = firebase.database();
 
 // グローバル変数
-let currentUser = null;
 let members = [];
 let history = [];
 let currentFilter = 'all';
@@ -24,43 +22,10 @@ let editingMemberId = null;
 let membersListener = null;
 let historyListener = null;
 
-// 認証状態の監視
-auth.onAuthStateChanged(function(user) {
-    if (user) {
-        currentUser = user;
-        document.getElementById('loginContainer').classList.remove('show');
-        document.getElementById('mainContainer').style.display = 'block';
-        document.getElementById('userEmail').textContent = user.email;
-        initializeApp();
-    } else {
-        currentUser = null;
-        document.getElementById('loginContainer').classList.add('show');
-        document.getElementById('mainContainer').style.display = 'none';
-        if (membersListener) membersListener.off();
-        if (historyListener) historyListener.off();
-    }
+// 初期化
+document.addEventListener('DOMContentLoaded', function() {
+    initializeApp();
 });
-
-// Googleログイン
-function signInWithGoogle() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    showLoading();
-    auth.signInWithPopup(provider)
-        .then(function(result) {
-            hideLoading();
-        })
-        .catch(function(error) {
-            hideLoading();
-            alert('ログインに失敗しました: ' + error.message);
-        });
-}
-
-// ログアウト
-function signOut() {
-    if (confirm('ログアウトしますか?')) {
-        auth.signOut();
-    }
-}
 
 // アプリ初期化
 function initializeApp() {
@@ -285,7 +250,6 @@ function renderHistory(memberId) {
             <div class="history-item">
                 <div class="history-date">${formatDate(h.changedAt)} ${formatTime(h.changedAt)}</div>
                 <div class="history-change">
-                    <span class="history-user">${h.changedBy}</span>が
                     ${h.fromStatus ? `「${h.fromStatus}」→` : ''}「${h.toStatus}」に変更
                 </div>
                 ${h.memo ? `<div class="history-change">💬 ${h.memo}</div>` : ''}
@@ -357,7 +321,7 @@ function saveMember() {
                     return historyRef.set({
                         memberId: editingMemberId,
                         changedAt: now,
-                        changedBy: currentUser.email,
+                        changedBy: 'マネージャー',
                         fromStatus: oldStatus,
                         toStatus: status,
                         memo: memo
@@ -392,7 +356,7 @@ function saveMember() {
                 return historyRef.set({
                     memberId: newMemberId,
                     changedAt: now,
-                    changedBy: currentUser.email,
+                    changedBy: 'マネージャー',
                     fromStatus: null,
                     toStatus: status,
                     memo: memo
