@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>営業メンバー管理システム</title>
+    <title>アポ振り管理くん</title>
     <style>
         * {
             margin: 0;
@@ -438,6 +438,76 @@
             font-size: 16px;
         }
 
+        /* ルール表示 */
+        .rules-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .rules-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rule-category {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+        }
+
+        .rule-category-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #4a5568;
+            margin-bottom: 12px;
+        }
+
+        .rule-item {
+            font-size: 14px;
+            color: #4a5568;
+            line-height: 1.8;
+            margin-bottom: 8px;
+            padding-left: 16px;
+            position: relative;
+        }
+
+        .rule-item:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .rule-note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            margin-top: 16px;
+            border-radius: 6px;
+        }
+
+        .rule-note-item {
+            font-size: 13px;
+            color: #856404;
+            line-height: 1.6;
+            margin-bottom: 6px;
+        }
+
+        .rule-note-item:last-child {
+            margin-bottom: 0;
+        }
+
         .loading-overlay {
             display: none;
             position: fixed;
@@ -515,7 +585,7 @@
 
     <div class="container">
         <header>
-            <h1>📊 営業メンバー管理システム</h1>
+            <h1>📊 アポ振り管理くん</h1>
             <div class="notification-banner" id="notificationBanner">
                 <p id="notificationText"></p>
             </div>
@@ -534,6 +604,30 @@
         </div>
 
         <div class="members-grid" id="membersGrid"></div>
+
+        <!-- アポ振りルール -->
+        <div class="rules-section">
+            <h2 class="rules-title">📋 アポ振りルール</h2>
+            
+            <div class="rule-category">
+                <div class="rule-category-title">【通常アポ振り → トレアポミックス条件】</div>
+                <div class="rule-item">ジョインから半年未満:直近30日成約率16%を切った時</div>
+                <div class="rule-item">ジョインから半年以上:直近3ヶ月成約率16%を切った時</div>
+            </div>
+
+            <div class="rule-category">
+                <div class="rule-category-title">【トレアポミックス → 通常アポ復活条件】</div>
+                <div class="rule-item">トレアポ込みの直近30日成約率12%以上</div>
+                <div class="rule-item" style="margin-top: 8px; font-weight: 600;">または</div>
+                <div class="rule-item">トレアポのみの直近30日成約率5%以上</div>
+            </div>
+
+            <div class="rule-note">
+                <div class="rule-note-item">※ 月内の通常アポの見込み数が少ないと判断した場合は、トレアポミックスのメンバーはトレアポのみになる</div>
+                <div class="rule-note-item">※ アポ振り停止はマネージャー判断か、アポ飛ばしか、本人希望以外はなし</div>
+                <div class="rule-note-item">※ 新人の場合は教育責任者の判断により、通常アポのみから開始する場合あり</div>
+            </div>
+        </div>
     </div>
 
     <div class="modal" id="memberModal">
